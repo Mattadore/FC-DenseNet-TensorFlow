@@ -24,6 +24,7 @@ parser.add_argument("--learning_rate", default=1e-4,
                     help="Learning rate for optimizer", type=float)
 parser.add_argument("--infer_data", default="data/infer")
 parser.add_argument("--output_folder", default="data/output")
+parser.add_argument("--prior_model", default="")
 
 
 
@@ -35,7 +36,7 @@ def main():
 
     if FLAGS.mode == 'train':
         tiramisu.train(FLAGS.train_data, FLAGS.val_data, FLAGS.ckpt,
-                       FLAGS.batch_size, FLAGS.epochs, FLAGS.learning_rate)
+        FLAGS.batch_size, FLAGS.epochs, FLAGS.learning_rate, FLAGS.prior_model)
     elif FLAGS.mode == 'infer':
         tiramisu.infer(FLAGS.infer_data, FLAGS.batch_size, FLAGS.ckpt, FLAGS.output_folder)
 

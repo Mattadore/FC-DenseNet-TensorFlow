@@ -238,11 +238,11 @@ class DenseTiramisu(object):
                                 activation=None,
                                 kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                 name='last_conv1x1')
-            print("Mask Prediction: ", x.get_shape())
+        print("Mask Prediction: ", x.get_shape())
 
         return x
 
-    def train(self, train_path, val_path, save_dir, batch_size, epochs, learning_rate):
+    def train(self, train_path, val_path, save_dir, batch_size, epochs, learning_rate, prior_model):
         """
         Trains the Tiramisu on the specified training data and periodically validates
         on the validation data.
@@ -262,6 +262,8 @@ class DenseTiramisu(object):
         train_mask_path = os.path.join(train_path, 'masks')
         val_image_path = os.path.join(val_path, 'images')
         val_mask_path = os.path.join(val_path, 'masks')
+
+
 
         assert os.path.exists(train_image_path), "No training image folder found"
         assert os.path.exists(train_mask_path), "No training mask folder found"
@@ -307,8 +309,10 @@ class DenseTiramisu(object):
 
         reset_iou = tf.variables_initializer(var_list=running_vars)
 
-        saver = tf.train.Saver(max_to_keep=20)
-        with tf.Session() as sess:
+        with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
+            saver = tf.train.Saver(max_to_keep=20)
+            if prior_model != "":
+                saver.restore(sess,prior_model) 
             sess.run([tf.global_variables_initializer(),
                     tf.local_variables_initializer()])
             for epoch in range(epochs):
@@ -375,12 +379,17 @@ class DenseTiramisu(object):
         with tf.Session() as sess:
             saver.restore(sess, ckpt)
             sess.run(infer_queue_init)
-            for _ in range(len(image_paths) // batch_size):
+            for iterat in range(len(image_paths) // batch_size):
                 image = sess.run(infer_data)
                 feed_dict = {
                     image_ph: image,
                     training: True
                 }
+                print(image.name)
                 prediction = sess.run(mask, feed_dict)
+                print("Batch ",iterat," complete") 
                 for j in range(prediction.shape[0]):
-                    cv2.imwrite(os.path.join(output_folder, '{}.png'.format(j)), 255 * prediction[j, :, :])
+                    pathn = image_paths[iterat*2+j]
+                    pathn = pathn.split('/')[-1]
+                    print("name is " + pathn)
+                    cv2.imwrite(os.path.join(output_folder, pathn), 255 * prediction[j, :, :])
