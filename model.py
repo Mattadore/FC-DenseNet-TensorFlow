@@ -385,11 +385,11 @@ class DenseTiramisu(object):
                     image_ph: image,
                     training: True
                 }
-                print(image.name)
                 prediction = sess.run(mask, feed_dict)
                 print("Batch ",iterat," complete") 
                 for j in range(prediction.shape[0]):
-                    pathn = image_paths[iterat*2+j]
+                    pathn = image_paths[iterat*batch_size+j]
                     pathn = pathn.split('/')[-1]
+                    predictionMask = 255 * prediction[j, :, :]
                     print("name is " + pathn)
-                    cv2.imwrite(os.path.join(output_folder, pathn), 255 * prediction[j, :, :])
+                    cv2.imwrite(os.path.join(output_folder, pathn), predictionMask)
