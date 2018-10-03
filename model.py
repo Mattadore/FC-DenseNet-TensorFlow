@@ -309,7 +309,7 @@ class DenseTiramisu(object):
 
         reset_iou = tf.variables_initializer(var_list=running_vars)
 
-        with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
+        with tf.Session() as sess:
             saver = tf.train.Saver(max_to_keep=20)
             if prior_model != "":
                 saver.restore(sess,prior_model) 
