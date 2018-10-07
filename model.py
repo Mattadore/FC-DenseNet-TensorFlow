@@ -379,7 +379,7 @@ class DenseTiramisu(object):
         with tf.Session() as sess:
             saver.restore(sess, ckpt)
             sess.run(infer_queue_init)
-            for iterat in range(len(image_paths) // batch_size):
+            for iterat in range(len(image_paths)): #// batch_size):
                 image = sess.run(infer_data)
                 feed_dict = {
                     image_ph: image,
@@ -387,9 +387,11 @@ class DenseTiramisu(object):
                 }
                 prediction = sess.run(mask, feed_dict)
                 print("Batch ",iterat," complete") 
-                for j in range(prediction.shape[0]):
-                    pathn = image_paths[iterat*batch_size+j]
-                    pathn = pathn.split('/')[-1]
-                    predictionMask = 255 * prediction[j, :, :]
-                    print("name is " + pathn)
-                    cv2.imwrite(os.path.join(output_folder, pathn), predictionMask)
+               # for j in range(batch_size):
+                   # print("j: " + str(j))
+               # pathn = image_paths[iterat*batch_size+j]
+                pathn = image_paths[iterat]
+                pathn = pathn.split('/')[-1]
+                predictionMask = 255 * prediction[ :, :]
+                print("name is " + pathn)
+                cv2.imwrite(os.path.join(output_folder, pathn), predictionMask)
